@@ -1,7 +1,11 @@
 
 import Link from "next/link";
+import { getSession } from "@/lib/session";
+import LogoutButton from "./LogoutButton";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const session = await getSession();
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#243D35]/10 bg-[#F4F1E8]/95 backdrop-blur-md">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
@@ -15,42 +19,48 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <Link
-            href="/"
-            className="text-sm font-medium text-[#243D35] transition hover:text-[#A7B69A]"
-          >
+          <Link href="/" className="text-sm font-medium text-[#243D35] transition hover:text-[#A7B69A]">
             Inicio
           </Link>
 
-          <Link
-            href="/espacios"
-            className="text-sm font-medium text-[#243D35] transition hover:text-[#A7B69A]"
-          >
+          <Link href="/espacios" className="text-sm font-medium text-[#243D35] transition hover:text-[#A7B69A]">
             Espacios
           </Link>
 
-          <a
-            href="/#nosotros"
-            className="text-sm font-medium text-[#243D35] transition hover:text-[#A7B69A]"
-          >
+          <a href="/#nosotros" className="text-sm font-medium text-[#243D35] transition hover:text-[#A7B69A]">
             Nosotros
           </a>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden rounded-full px-5 py-2.5 text-sm font-semibold text-[#243D35] transition hover:bg-[#A7B69A]/20 sm:inline-flex"
-          >
-            Iniciar sesión
-          </Link>
+          {session ? (
+            <>
+              <Link
+                href={session.role === "ADMIN" ? "/admin" : "/dashboard"}
+                className="rounded-full px-5 py-2.5 text-sm font-semibold text-[#243D35] transition hover:bg-[#A7B69A]/20"
+              >
+                {session.role === "ADMIN" ? "Administración" : "Mi panel"}
+              </Link>
 
-          <Link
-            href="/register"
-            className="rounded-full bg-[#243D35] px-5 py-2.5 text-sm  font-semibold text-white shadow-sm transition hover:bg-[#36594D]"
-          >
-            Registrarse
-          </Link>
+              <LogoutButton />
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden rounded-full px-5 py-2.5 text-sm font-semibold text-[#243D35] transition hover:bg-[#A7B69A]/20 sm:inline-flex"
+              >
+                Iniciar sesión
+              </Link>
+
+              <Link
+                href="/register"
+                className="rounded-full bg-[#243D35] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#36594D]"
+              >
+                Registrarse
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </header>
