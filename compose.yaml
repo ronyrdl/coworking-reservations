@@ -1,0 +1,9 @@
+services:
+  cospace:
+    image: cospace:latest
+    container_name: cospace
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    env_file:
+      - .env

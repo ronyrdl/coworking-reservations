@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String
+  passwordHash  String
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  reservations  Reservation[]
+  refreshTokens RefreshToken[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Space {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  type         String
+  capacity     Int
+  pricePerHour Decimal  @db.Decimal(10, 2)
+  imageUrl     String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  reservations Reservation[]
+
+  @@index([isActive])
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  spaceId     String
+  space       Space             @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  startAt     DateTime
+  endAt       DateTime
+  totalPrice  Decimal           @db.Decimal(10, 2)
+  status      ReservationStatus @default(CONFIRMED)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  cancelledAt DateTime?
+  idempotencyKey String?
+
+
+  @@index([userId, status])
+  @@index([spaceId, status])
+  @@index([startAt, endAt])
+  @@unique([userId, idempotencyKey])
+}
